@@ -1,0 +1,4 @@
+.env
+trade.db
+trade_log.txt
+__pycache__/
