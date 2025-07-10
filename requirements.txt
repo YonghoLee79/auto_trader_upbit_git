@@ -1,5 +1,6 @@
-requests
-pandas
-numpy
-python-dotenv
-pyjwt
+requests>=2.28.0
+pandas>=1.5.0
+numpy>=1.21.0
+python-dotenv>=0.19.0
+PyJWT>=2.6.0
+Flask>=2.3.0

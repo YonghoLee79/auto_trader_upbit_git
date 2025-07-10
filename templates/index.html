@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>업비트 자동매매 플랫폼</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .status {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+        
+        .balance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .balance-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .trade-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        
+        .trade-item:last-child {
+            border-bottom: none;
+        }
+        
+        .trade-header {
+            font-weight: 600;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+        
+        .status-active {
+            background: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-inactive {
+            background: #f44336;
+            box-shadow: 0 0 10px rgba(244, 67, 54, 0.3);
+        }
+        
+        .profit {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+        
+        .loss {
+            color: #f44336;
+            font-weight: 600;
+        }
+        
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .market-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .market-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .market-btn.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .status {
+                grid-template-columns: 1fr;
+            }
+            
+            .trade-item {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                text-align: center;
+            }
+            
+            .btn {
+                font-size: 0.8rem;
+                padding: 0.6rem 1rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .market-buttons {
+                justify-content: center;
+            }
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #667eea;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 업비트 자동매매 플랫폼</h1>
+    </div>
+    
+    <div class="container">
+        <!-- 컨트롤 패널 -->
+        <div class="controls">
+            <button id="startBtn" class="btn btn-primary">자동매매 시작</button>
+            <button id="stopBtn" class="btn btn-danger">자동매매 중지</button>
+            <span id="tradingStatus">
+                <span class="status-indicator status-inactive"></span>
+                매매 중지
+            </span>
+        </div>
+        
+        <!-- 상태 대시보드 -->
+        <div class="status">
+            <div class="card">
+                <h3>💰 잔고 현황</h3>
+                <div id="balanceInfo">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        데이터 로딩 중...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📊 수익률 통계</h3>
+                <div id="performanceInfo">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        데이터 로딩 중...
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📍 포지션 현황</h3>
+                <div id="positionInfo">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        데이터 로딩 중...
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 탭 메뉴 -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('trades')">거래 내역</button>
+            <button class="tab" onclick="showTab('charts')">차트 분석</button>
+        </div>
+        
+        <!-- 거래 내역 탭 -->
+        <div id="trades" class="tab-content active">
+            <div class="trade-item trade-header">
+                <div>시간</div>
+                <div>마켓</div>
+                <div>액션</div>
+                <div>수익률</div>
+            </div>
+            <div id="tradesList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    거래 내역 로딩 중...
+                </div>
+            </div>
+        </div>
+        
+        <!-- 차트 분석 탭 -->
+        <div id="charts" class="tab-content">
+            <div class="market-buttons">
+                <button class="market-btn active" onclick="loadChart('KRW-DOGE')">DOGE</button>
+                <button class="market-btn" onclick="loadChart('KRW-XRP')">XRP</button>
+                <button class="market-btn" onclick="loadChart('KRW-ADA')">ADA</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="priceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        let currentMarket = 'KRW-DOGE';
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStatus();
+            loadTrades();
+            loadPerformance();
+            loadChart(currentMarket);
+            
+            // 5초마다 데이터 업데이트
+            setInterval(loadStatus, 5000);
+            setInterval(loadTrades, 10000);
+            setInterval(loadPerformance, 30000);
+        });
+        
+        // 탭 전환
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        // 상태 정보 로드
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                // 트레이딩 상태 업데이트
+                const statusSpan = document.getElementById('tradingStatus');
+                if (data.trading_active) {
+                    statusSpan.innerHTML = '<span class="status-indicator status-active"></span>매매 실행중';
+                } else {
+                    statusSpan.innerHTML = '<span class="status-indicator status-inactive"></span>매매 중지';
+                }
+                
+                // 잔고 정보 업데이트
+                const balanceDiv = document.getElementById('balanceInfo');
+                let balanceHtml = `
+                    <div class="balance-item">
+                        <span>KRW</span>
+                        <span class="balance-value">${formatNumber(data.krw_balance)} 원</span>
+                    </div>
+                `;
+                
+                for (const [coin, info] of Object.entries(data.coin_balances)) {
+                    balanceHtml += `
+                        <div class="balance-item">
+                            <span>${coin}</span>
+                            <span class="balance-value">${formatNumber(info.value)} 원</span>
+                        </div>
+                    `;
+                }
+                
+                balanceHtml += `
+                    <div class="balance-item" style="border-top: 2px solid #667eea; margin-top: 0.5rem; font-weight: 600;">
+                        <span>총 자산</span>
+                        <span class="balance-value">${formatNumber(data.total_value)} 원</span>
+                    </div>
+                `;
+                
+                balanceDiv.innerHTML = balanceHtml;
+                
+                // 포지션 정보 업데이트
+                const positionDiv = document.getElementById('positionInfo');
+                if (Object.keys(data.positions).length === 0) {
+                    positionDiv.innerHTML = '<div class="balance-item"><span>보유 포지션 없음</span></div>';
+                } else {
+                    let positionHtml = '';
+                    for (const [market, pos] of Object.entries(data.positions)) {
+                        positionHtml += `
+                            <div class="balance-item">
+                                <span>${market}</span>
+                                <span class="balance-value">${formatNumber(pos.entry)} 원</span>
+                            </div>
+                        `;
+                    }
+                    positionDiv.innerHTML = positionHtml;
+                }
+                
+            } catch (error) {
+                console.error('상태 로드 오류:', error);
+            }
+        }
+        
+        // 거래 내역 로드
+        async function loadTrades() {
+            try {
+                const response = await fetch('/api/trades');
+                const trades = await response.json();
+                
+                const tradesDiv = document.getElementById('tradesList');
+                let tradesHtml = '';
+                
+                trades.forEach(trade => {
+                    const pnlClass = trade.pnl > 0 ? 'profit' : (trade.pnl < 0 ? 'loss' : '');
+                    const pnlText = trade.pnl !== 0 ? `${(trade.pnl * 100).toFixed(2)}%` : '-';
+                    
+                    tradesHtml += `
+                        <div class="trade-item">
+                            <div>${new Date(trade.time).toLocaleString()}</div>
+                            <div>${trade.market}</div>
+                            <div>${trade.action}</div>
+                            <div class="${pnlClass}">${pnlText}</div>
+                        </div>
+                    `;
+                });
+                
+                tradesDiv.innerHTML = tradesHtml || '<div class="trade-item">거래 내역이 없습니다.</div>';
+                
+            } catch (error) {
+                console.error('거래 내역 로드 오류:', error);
+            }
+        }
+        
+        // 수익률 통계 로드
+        async function loadPerformance() {
+            try {
+                const response = await fetch('/api/performance');
+                const data = await response.json();
+                
+                const performanceDiv = document.getElementById('performanceInfo');
+                
+                if (data.total && data.total.total_profit !== null) {
+                    const totalProfit = data.total.total_profit * 100;
+                    const profitClass = totalProfit > 0 ? 'profit' : (totalProfit < 0 ? 'loss' : '');
+                    
+                    let performanceHtml = `
+                        <div class="balance-item">
+                            <span>총 수익률</span>
+                            <span class="balance-value ${profitClass}">${totalProfit.toFixed(2)}%</span>
+                        </div>
+                        <div class="balance-item">
+                            <span>총 거래수</span>
+                            <span class="balance-value">${data.total.total_trades}회</span>
+                        </div>
+                    `;
+                    
+                    performanceDiv.innerHTML = performanceHtml;
+                } else {
+                    performanceDiv.innerHTML = '<div class="balance-item"><span>수익률 데이터 없음</span></div>';
+                }
+                
+            } catch (error) {
+                console.error('수익률 통계 로드 오류:', error);
+            }
+        }
+        
+        // 차트 로드
+        async function loadChart(market) {
+            currentMarket = market;
+            
+            // 마켓 버튼 활성화 상태 변경
+            document.querySelectorAll('.market-btn').forEach(btn => btn.classList.remove('active'));
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+            
+            try {
+                const response = await fetch(`/api/charts/${market}`);
+                const data = await response.json();
+                
+                if (chart) {
+                    chart.destroy();
+                }
+                
+                const ctx = document.getElementById('priceChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.map(d => new Date(d.time).toLocaleDateString()),
+                        datasets: [{
+                            label: `${market} 가격`,
+                            data: data.map(d => d.close),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('차트 로드 오류:', error);
+            }
+        }
+        
+        // 자동매매 시작
+        document.getElementById('startBtn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/api/trading/start', { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+                loadStatus();
+            } catch (error) {
+                alert('자동매매 시작 오류: ' + error.message);
+            }
+        });
+        
+        // 자동매매 중지
+        document.getElementById('stopBtn').addEventListener('click', async function() {
+            try {
+                const response = await fetch('/api/trading/stop', { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+                loadStatus();
+            } catch (error) {
+                alert('자동매매 중지 오류: ' + error.message);
+            }
+        });
+        
+        // 숫자 포맷팅
+        function formatNumber(num) {
+            return new Intl.NumberFormat('ko-KR').format(Math.round(num));
+        }
+    </script>
+</body>
+</html>

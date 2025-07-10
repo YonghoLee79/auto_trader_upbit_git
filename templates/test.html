@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>업비트 자동매매 플랫폼 - 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        .btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn-danger {
+            background: #f44336;
+        }
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+        #status {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 업비트 자동매매 플랫폼</h1>
+    
+    <div class="card">
+        <h2>시스템 상태</h2>
+        <div id="status">상태 로딩 중...</div>
+        <button class="btn" onclick="loadStatus()">상태 새로고침</button>
+    </div>
+    
+    <div class="card">
+        <h2>자동매매 제어</h2>
+        <button class="btn" onclick="startTrading()">자동매매 시작</button>
+        <button class="btn btn-danger" onclick="stopTrading()">자동매매 중지</button>
+    </div>
+    
+    <div class="card">
+        <h2>API 테스트</h2>
+        <button class="btn" onclick="testAPI()">API 연결 테스트</button>
+        <div id="apiResult" style="margin-top: 10px;"></div>
+    </div>
+
+    <script>
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                document.getElementById('status').innerHTML = `
+                    <strong>트레이딩 상태:</strong> ${data.trading_active ? '실행중' : '중지'}<br>
+                    <strong>KRW 잔고:</strong> ${formatNumber(data.krw_balance)} 원<br>
+                    <strong>총 자산:</strong> ${formatNumber(data.total_value)} 원<br>
+                    <strong>포지션 수:</strong> ${Object.keys(data.positions).length}개
+                `;
+            } catch (error) {
+                document.getElementById('status').innerHTML = `오류: ${error.message}`;
+            }
+        }
+        
+        async function startTrading() {
+            try {
+                const response = await fetch('/api/trading/start', { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+                loadStatus();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        }
+        
+        async function stopTrading() {
+            try {
+                const response = await fetch('/api/trading/stop', { method: 'POST' });
+                const data = await response.json();
+                alert(data.message);
+                loadStatus();
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        }
+        
+        async function testAPI() {
+            const results = [];
+            
+            try {
+                // 상태 API 테스트
+                const statusResponse = await fetch('/api/status');
+                const statusData = await statusResponse.json();
+                results.push(`✅ Status API: OK (KRW: ${statusData.krw_balance})`);
+                
+                // 거래 내역 API 테스트
+                const tradesResponse = await fetch('/api/trades');
+                const tradesData = await tradesResponse.json();
+                results.push(`✅ Trades API: OK (${tradesData.length} trades)`);
+                
+                // 수익률 API 테스트
+                const performanceResponse = await fetch('/api/performance');
+                const performanceData = await performanceResponse.json();
+                results.push(`✅ Performance API: OK`);
+                
+                document.getElementById('apiResult').innerHTML = results.join('<br>');
+                
+            } catch (error) {
+                document.getElementById('apiResult').innerHTML = `❌ API 테스트 실패: ${error.message}`;
+            }
+        }
+        
+        function formatNumber(num) {
+            return new Intl.NumberFormat('ko-KR').format(Math.round(num));
+        }
+        
+        // 페이지 로드 시 상태 로드
+        document.addEventListener('DOMContentLoaded', loadStatus);
+    </script>
+</body>
+</html>
