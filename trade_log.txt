@@ -1,0 +1,12 @@
+2025-07-11 17:24:23,970 | INFO | KRW 잔고: 0
+2025-07-11 17:24:25,590 | INFO | KRW-DOGE: 대기 (시그널합계: 2, 4)
+2025-07-11 17:24:25,680 | INFO | KRW-XRP: 대기 (시그널합계: 3, 3)
+2025-07-11 17:24:26,003 | INFO | KRW-ADA: 대기 (시그널합계: 3, 3)
+2025-07-11 17:55:48,722 | INFO | [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9000
+ * Running on http://192.168.35.104:9000
+2025-07-11 17:55:48,723 | INFO | [33mPress CTRL+C to quit[0m
+2025-07-11 17:55:48,723 | INFO |  * Restarting with stat
+2025-07-11 17:55:48,918 | WARNING |  * Debugger is active!
+2025-07-11 17:55:48,924 | INFO |  * Debugger PIN: 137-272-782

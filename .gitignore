@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Environment variables
 .env
 
@@ -44,3 +45,10 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.temp
+=======
+venv/
+__pycache__/
+*.pyc
+.env
+.DS_Store
+>>>>>>> origin/main
